@@ -1,6 +1,7 @@
 
-local base = import 'templates/base.libsonnet';
+local base = import "templates/base.libsonnet";
 local utils = import "templates/utils.libsonnet";
+local gpus = import "templates/gpus.libsonnet";
 local volumes = import "templates/volumes.libsonnet";
 
 # Mnist
@@ -10,14 +11,21 @@ local mnist = base.BaseTest {
   mode: "example",
   configMaps: [],
 
-  timeout: 900, # 15 minutes, in seconds
+  timeout: 20, # 20 seconds
 
   image: std.extVar('image'),
   imageTag: std.extVar('image-tag'),
 
-  cpu: "4.5",
+  cpu: "2",
   memory: "8Gi",
-  accelerator: nvidia.,
+  accelerator: gpus.teslaK80,
+
+  volumeMap+: {
+    dshm: volumes.MemoryVolumeSpec {
+      name: "dshm",
+      mountPath: "/dev/shm",
+    },
+  },
   
   command: utils.scriptCommand(
     |||
